@@ -6,10 +6,14 @@ public class ShieldProjectile : MonoBehaviour
     public Transform player;
     public float returnSpeed = 25f;
     public float spinSpeed = 360f;
+    public float detectRadius = 10f;
+    public LayerMask enemyLayer; // Set this in the Inspector
 
     private Rigidbody rb;
     private Collider shieldCollider;
     private bool isReturning = false;
+    private bool isAttackingEnemy = false;
+    private Transform targetEnemy;
 
     public event Action OnShieldReturned;
 
@@ -18,7 +22,6 @@ public class ShieldProjectile : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         shieldCollider = GetComponent<Collider>();
 
-        // Ignore collisions with player
         if (player != null)
         {
             Collider playerCollider = player.GetComponent<Collider>();
@@ -28,19 +31,33 @@ public class ShieldProjectile : MonoBehaviour
             }
         }
 
-        // Smooth motion
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
     }
 
     void FixedUpdate()
     {
-        // Rotate around Y axis using physics rotation
         rb.MoveRotation(rb.rotation * Quaternion.Euler(0f, spinSpeed * Time.fixedDeltaTime, 0f));
 
-        if (isReturning)
+        if (!isReturning && !isAttackingEnemy)
         {
-            // Disable collider to ignore collisions on return
+            DetectEnemies();
+        }
+
+        if (isAttackingEnemy && targetEnemy != null)
+        {
+            Vector3 dirToEnemy = (targetEnemy.position - transform.position).normalized;
+            rb.linearVelocity = dirToEnemy * returnSpeed;
+
+            if (Vector3.Distance(transform.position, targetEnemy.position) < 1f)
+            {
+                isAttackingEnemy = false;
+                targetEnemy = null;
+                StartReturn();
+            }
+        }
+        else if (isReturning)
+        {
             if (shieldCollider.enabled)
                 shieldCollider.enabled = false;
 
@@ -55,9 +72,35 @@ public class ShieldProjectile : MonoBehaviour
         }
     }
 
+    void DetectEnemies()
+    {
+        Collider[] enemies = Physics.OverlapSphere(transform.position, detectRadius, enemyLayer);
+        if (enemies.Length > 0)
+        {
+            float minDist = Mathf.Infinity;
+            Transform closest = null;
+
+            foreach (Collider enemy in enemies)
+            {
+                float dist = Vector3.Distance(transform.position, enemy.transform.position);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    closest = enemy.transform;
+                }
+            }
+
+            if (closest != null)
+            {
+                targetEnemy = closest;
+                isAttackingEnemy = true;
+            }
+        }
+    }
+
     void OnCollisionEnter(Collision collision)
     {
-        if (!isReturning)
+        if (!isReturning && !isAttackingEnemy)
         {
             StartReturn();
         }
@@ -68,6 +111,15 @@ public class ShieldProjectile : MonoBehaviour
         if (!isReturning)
         {
             isReturning = true;
+            isAttackingEnemy = false;
+            targetEnemy = null;
         }
+    }
+
+    // Always draw detection radius in scene view
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, detectRadius);
     }
 }

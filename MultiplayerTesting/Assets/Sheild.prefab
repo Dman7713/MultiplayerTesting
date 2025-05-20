@@ -150,6 +150,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
-  returnSpeed: 35
-  isReturning: 0
+  returnSpeed: 45
   spinSpeed: 360
+  detectRadius: 1
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 256
