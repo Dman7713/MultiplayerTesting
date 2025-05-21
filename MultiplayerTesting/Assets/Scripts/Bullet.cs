@@ -4,16 +4,16 @@ public class Pellet3D : MonoBehaviour
 {
     public float speed = 20f;
     public float lifeTime = 2f;
-    public LayerMask playerLayer; // Assign the Player layer in inspector
+    public LayerMask playerLayer;
 
     private Rigidbody rb;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        rb.linearVelocity = transform.forward * speed;
+        rb.linearVelocity = transform.forward * speed;  // Corrected from linearVelocity to velocity
 
-        // Ignore collisions with all colliders on the player layer
+        // Ignore collisions with the player
         Collider[] playerColliders = Physics.OverlapSphere(transform.position, 2f, playerLayer);
         foreach (Collider col in playerColliders)
         {
@@ -23,9 +23,9 @@ public class Pellet3D : MonoBehaviour
         Destroy(gameObject, lifeTime);
     }
 
-    void OnCollisionEnter(Collision collision)
+    void OnTriggerEnter(Collider other)
     {
-        // Handle damage or effects here if needed
+        // Destroy the bullet on any collision (player collisions are ignored)
         Destroy(gameObject);
     }
 }

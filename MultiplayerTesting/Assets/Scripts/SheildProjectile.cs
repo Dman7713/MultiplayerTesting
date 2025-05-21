@@ -7,7 +7,8 @@ public class ShieldProjectile : MonoBehaviour
     public float returnSpeed = 25f;
     public float spinSpeed = 360f;
     public float detectRadius = 10f;
-    public LayerMask enemyLayer; // Set this in the Inspector
+    public LayerMask enemyLayer;
+    public int damage = 25;
 
     private Rigidbody rb;
     private Collider shieldCollider;
@@ -100,6 +101,20 @@ public class ShieldProjectile : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+        Debug.Log("Shield collided with: " + collision.gameObject.name);
+
+        if (!isReturning)
+        {
+            EnemyHealth enemyHealth = collision.gameObject.GetComponentInParent<EnemyHealth>();
+            if (enemyHealth != null)
+            {
+                Debug.Log("Applying damage to: " + collision.gameObject.name);
+                enemyHealth.TakeDamage(damage);
+                StartReturn();
+                return;
+            }
+        }
+
         if (!isReturning && !isAttackingEnemy)
         {
             StartReturn();
@@ -116,7 +131,6 @@ public class ShieldProjectile : MonoBehaviour
         }
     }
 
-    // Always draw detection radius in scene view
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
