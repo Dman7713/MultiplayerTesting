@@ -3,19 +3,30 @@ using UnityEngine;
 public class ShooterWithRaycastAndBullets : MonoBehaviour
 {
     public GameObject bulletPrefab;
-    public Transform bulletSpawnPoint;
+    public Transform bulletSpawnPoint1;
+    public Transform bulletSpawnPoint2;
     public float fireRate = 0.5f;
     public float raycastRange = 100f;
     public LayerMask enemyLayer;
     public int damage = 25;
-
     public bool showRaycast = true;
+
+    [HideInInspector]
+    public bool isShooting = false;
+
     private float nextFireTime = 0f;
     private LineRenderer lineRenderer;
+    private Animator animator;
 
     void Start()
     {
-        lineRenderer = gameObject.GetComponent<LineRenderer>();
+        animator = GetComponent<Animator>();
+        if (animator == null)
+        {
+            Debug.LogWarning("Animator not found on this object!");
+        }
+
+        lineRenderer = GetComponent<LineRenderer>();
         if (lineRenderer == null)
         {
             lineRenderer = gameObject.AddComponent<LineRenderer>();
@@ -31,12 +42,26 @@ public class ShooterWithRaycastAndBullets : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetButton("Fire1") && Time.time >= nextFireTime)
+        // Determine if the player is firing
+        bool firingNow = Input.GetButton("Fire1") && Time.time >= nextFireTime;
+
+        if (firingNow)
         {
             nextFireTime = Time.time + fireRate;
             Shoot();
         }
 
+        // Update isShooting
+        isShooting = firingNow;
+
+        // Set Animator bool
+        if (animator != null)
+        {
+            animator.SetBool("IsShooting", isShooting);
+            Debug.Log("Animator IsShooting set to: " + isShooting);
+        }
+
+        // Hide raycast line if needed
         if (!showRaycast)
         {
             lineRenderer.enabled = false;
@@ -45,16 +70,20 @@ public class ShooterWithRaycastAndBullets : MonoBehaviour
 
     void Shoot()
     {
-        // Spawn visual bullet (no damage from bullet)
-        Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
+        SpawnBullet(bulletSpawnPoint1);
+        SpawnBullet(bulletSpawnPoint2);
+    }
 
-        // Raycast for damage
-        Vector3 origin = bulletSpawnPoint.position;
-        Vector3 direction = bulletSpawnPoint.forward;
+    void SpawnBullet(Transform spawnPoint)
+    {
+        Instantiate(bulletPrefab, spawnPoint.position, spawnPoint.rotation);
 
-        RaycastHit hit;
+        Vector3 origin = spawnPoint.position;
+        Vector3 direction = spawnPoint.forward;
+
         lineRenderer.enabled = showRaycast;
 
+        RaycastHit hit;
         if (Physics.Raycast(origin, direction, out hit, raycastRange, enemyLayer))
         {
             EnemyHealth enemy = hit.collider.GetComponent<EnemyHealth>();

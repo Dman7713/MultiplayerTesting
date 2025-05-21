@@ -11,7 +11,7 @@ public class Pellet3D : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        rb.linearVelocity = transform.forward * speed;  // Corrected from linearVelocity to velocity
+        rb.linearVelocity = transform.forward * speed;  // Fixed here
 
         // Ignore collisions with the player
         Collider[] playerColliders = Physics.OverlapSphere(transform.position, 2f, playerLayer);
@@ -25,7 +25,7 @@ public class Pellet3D : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        // Destroy the bullet on any collision (player collisions are ignored)
+        // Destroy the pellet on any collision (player collisions are ignored)
         Destroy(gameObject);
     }
 }

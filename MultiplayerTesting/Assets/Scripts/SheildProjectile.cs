@@ -7,6 +7,7 @@ public class ShieldProjectile : MonoBehaviour
     public float returnSpeed = 25f;
     public float spinSpeed = 360f;
     public float detectRadius = 10f;
+    public float maxDistance = 30f; // NEW: Max distance before return
     public LayerMask enemyLayer;
     public int damage = 25;
 
@@ -15,6 +16,7 @@ public class ShieldProjectile : MonoBehaviour
     private bool isReturning = false;
     private bool isAttackingEnemy = false;
     private Transform targetEnemy;
+    private Vector3 startPosition; // NEW: Track initial launch position
 
     public event Action OnShieldReturned;
 
@@ -22,6 +24,7 @@ public class ShieldProjectile : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         shieldCollider = GetComponent<Collider>();
+        startPosition = transform.position;
 
         if (player != null)
         {
@@ -43,6 +46,13 @@ public class ShieldProjectile : MonoBehaviour
         if (!isReturning && !isAttackingEnemy)
         {
             DetectEnemies();
+
+            // Return if exceeded max distance from player
+            float distanceFromPlayer = Vector3.Distance(transform.position, player.position);
+            if (distanceFromPlayer > maxDistance)
+            {
+                StartReturn();
+            }
         }
 
         if (isAttackingEnemy && targetEnemy != null)

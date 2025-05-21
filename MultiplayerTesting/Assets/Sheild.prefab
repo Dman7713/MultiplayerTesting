@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 2163559512215689818}
   m_Layer: 0
   m_Name: Sheild
-  m_TagString: Untagged
+  m_TagString: Shield
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -150,9 +150,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
-  returnSpeed: 45
-  spinSpeed: 360
+  returnSpeed: 60
+  spinSpeed: 1000
   detectRadius: 1
+  maxDistance: 30
   enemyLayer:
     serializedVersion: 2
     m_Bits: 256

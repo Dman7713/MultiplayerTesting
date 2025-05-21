@@ -35,4 +35,12 @@ public class EnemyHealth : MonoBehaviour
 
         Destroy(gameObject);
     }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Shield"))
+        {
+            Die();
+        }
+    }
 }
